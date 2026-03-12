@@ -1,60 +1,33 @@
 package com.pm.filter;
 
 import com.pm.model.User;
-
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 import java.io.IOException;
 
 @WebFilter("/*")
 public class AuthFilter implements Filter {
-
+    @Override public void init(FilterConfig c) {}
     @Override
-    public void init(FilterConfig cfg) throws ServletException {}
-
-    @Override
-    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
-
-        HttpServletRequest  request  = (HttpServletRequest) req;
-        HttpServletResponse response = (HttpServletResponse) resp;
-
+        HttpServletRequest  rq = (HttpServletRequest) req;
+        HttpServletResponse rs = (HttpServletResponse) res;
         req.setCharacterEncoding("UTF-8");
-        resp.setCharacterEncoding("UTF-8");
-
-        String path = request.getServletPath();
-
-        boolean isPublic = path.equals("/login")
-                        || path.equals("/register")
-                        || path.equals("/confirm")
-                        || path.startsWith("/css/")
-                        || path.startsWith("/js/");
-
-        if (isPublic) {
-            chain.doFilter(req, resp);
-            return;
+        res.setCharacterEncoding("UTF-8");
+        String p = rq.getServletPath();
+        if (p.equals("/login") || p.equals("/register") || p.equals("/confirm")
+            || p.startsWith("/css/") || p.startsWith("/js/")) {
+            chain.doFilter(req, res); return;
         }
-
-        HttpSession session = request.getSession(false);
-        User user = session != null ? (User) session.getAttribute("user") : null;
-
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+        HttpSession s = rq.getSession(false);
+        User u = s != null ? (User) s.getAttribute("user") : null;
+        if (u == null) { rs.sendRedirect(rq.getContextPath()+"/login"); return; }
+        if (p.startsWith("/admin") && !u.isAdmin()) {
+            rs.sendRedirect(rq.getContextPath()+"/dashboard"); return;
         }
-
-        // страницы только для admin
-        if (path.startsWith("/admin") && !user.isAdmin()) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
-            return;
-        }
-
-        chain.doFilter(req, resp);
+        chain.doFilter(req, res);
     }
-
-    @Override
-    public void destroy() {}
+    @Override public void destroy() {}
 }
