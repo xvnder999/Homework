@@ -5,16 +5,21 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public final class PasswordUtil {
+
     private PasswordUtil() {}
 
-    public static String hash(String p) {
+    public static String hash(String password) {
         try {
-            MessageDigest d = MessageDigest.getInstance("SHA-256");
-            byte[] b = d.digest(p.getBytes(StandardCharsets.UTF_8));
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = digest.digest(password.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
-            for (byte x : b) sb.append(String.format("%02x", x));
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
             return sb.toString();
-        } catch (NoSuchAlgorithmException e) { throw new RuntimeException(e); }
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static boolean verify(String password, String hash) {
