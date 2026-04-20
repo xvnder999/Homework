@@ -10,8 +10,8 @@ public final class DatabaseUtil {
     private static final Logger LOGGER = Logger.getLogger(DatabaseUtil.class.getName());
 
     private static final String URL      = "jdbc:postgresql://localhost:5432/recipes_db";
-    private static final String USER     = "postgres";
-    private static final String PASSWORD = "password";
+    private static final String USER     = "leej";
+    private static final String PASSWORD = "";
 
     static {
         try {
