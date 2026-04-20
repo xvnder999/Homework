@@ -27,10 +27,9 @@ public class RecipeServlet extends HttpServlet {
 
         setJson(resp);
         PrintWriter out = resp.getWriter();
-        String pathInfo = req.getPathInfo(); // null | "/" | "/123" | "/search"
+        String pathInfo = req.getPathInfo();
 
         try {
-            // GET /api/recipes/search?ingredient=рис
             if (pathInfo != null && pathInfo.equals("/search")) {
                 String ingredient = req.getParameter("ingredient");
                 if (ingredient == null || ingredient.trim().isEmpty()) {
@@ -44,7 +43,6 @@ public class RecipeServlet extends HttpServlet {
                 return;
             }
 
-            // GET /api/recipes/{id}
             if (pathInfo != null && pathInfo.length() > 1) {
                 int id = parseId(pathInfo.substring(1));
                 if (id < 0) {
@@ -63,7 +61,6 @@ public class RecipeServlet extends HttpServlet {
                 return;
             }
 
-            // GET /api/recipes
             List<Recipe> all = dao.findAll();
             LOGGER.info("GET /api/recipes — возвращено " + all.size());
             out.print(JsonUtil.toJson(all));

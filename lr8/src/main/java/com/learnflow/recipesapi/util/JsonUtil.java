@@ -35,7 +35,6 @@ public final class JsonUtil {
         return sb.append("]").toString();
     }
 
-    // единый формат ошибки: message + timestamp + status
     public static String error(String message, int status) {
         return "{"
             + "\"message\":\""   + escape(message)          + "\","
