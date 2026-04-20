@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список рецептов — Лабораторная работа №7</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+    <div class="logo">🍳 Рецепты</div>
+    <button class="btn btn-primary" onclick="openAdd()">+ Добавить рецепт</button>
+</header>
+
+<main class="container">
+    <h1 class="page-title">Список рецептов</h1>
+    <p class="page-sub">Управляйте коллекцией рецептов: добавляйте, редактируйте и удаляйте</p>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍  Поиск по названию...">
+    </div>
+
+    <div id="recipeGrid" class="recipe-grid"></div>
+</main>
+
+<div class="modal-overlay" id="formModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="modalTitle">Добавить рецепт</h2>
+            <button class="modal-close" onclick="closeModal('formModal')">✕</button>
+        </div>
+        <form id="recipeForm" onsubmit="return false;">
+            <div class="form-group">
+                <label for="fName">Название блюда *</label>
+                <input type="text" id="fName" placeholder="Например: Борщ классический" required>
+            </div>
+            <div class="form-group">
+                <label for="fIngredients">Ингредиенты *</label>
+                <textarea id="fIngredients" placeholder="Перечислите ингредиенты через запятую или с новой строки" required></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fDifficulty">Уровень сложности *</label>
+                    <select id="fDifficulty" required>
+                        <option value="">Выберите...</option>
+                        <option value="простой">Простой</option>
+                        <option value="средний">Средний</option>
+                        <option value="комплексный">Комплексный</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fCookTime">Время приготовления (мин) *</label>
+                    <input type="number" id="fCookTime" min="1" placeholder="30" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="fSteps">Схема приготовления *</label>
+                <textarea id="fSteps" style="min-height:120px;" placeholder="1. Шаг первый&#10;2. Шаг второй&#10;..." required></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('formModal')">Отмена</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="viewModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <h2 id="viewTitle"></h2>
+                <div style="margin-top:6px;" id="viewBadge"></div>
+            </div>
+            <button class="modal-close" onclick="closeModal('viewModal')">✕</button>
+        </div>
+        <div class="recipe-detail">
+            <h3>Время приготовления</h3>
+            <p id="viewCookTime"></p>
+            <h3>Ингредиенты</h3>
+            <p id="viewIngredients"></p>
+            <h3>Схема приготовления</h3>
+            <p id="viewSteps"></p>
+        </div>
+        <div class="form-actions" style="margin-top:24px;">
+            <button class="btn btn-outline" onclick="closeModal('viewModal')">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Toast-уведомление ── -->
+<div id="toast"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
