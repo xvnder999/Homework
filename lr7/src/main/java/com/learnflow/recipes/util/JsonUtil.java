@@ -3,7 +3,6 @@ package com.learnflow.recipes.util;
 import com.learnflow.recipes.model.Recipe;
 import java.util.List;
 
-
 public final class JsonUtil {
 
     private JsonUtil() {}
@@ -18,13 +17,15 @@ public final class JsonUtil {
     }
 
     public static String toJson(Recipe r) {
+        String img = r.getImagePath() != null ? r.getImagePath() : "";
         return "{"
-            + "\"id\":"          + r.getId()                    + ","
-            + "\"name\":\""      + escape(r.getName())          + "\","
-            + "\"ingredients\":\"" + escape(r.getIngredients()) + "\","
-            + "\"difficulty\":\"" + escape(r.getDifficulty())   + "\","
-            + "\"steps\":\""     + escape(r.getSteps())         + "\","
-            + "\"cookTime\":"    + r.getCookTime()
+            + "\"id\":"            + r.getId()                    + ","
+            + "\"name\":\""        + escape(r.getName())          + "\","
+            + "\"ingredients\":\"" + escape(r.getIngredients())   + "\","
+            + "\"difficulty\":\""  + escape(r.getDifficulty())    + "\","
+            + "\"steps\":\""       + escape(r.getSteps())         + "\","
+            + "\"cookTime\":"      + r.getCookTime()              + ","
+            + "\"imagePath\":\""   + escape(img)                  + "\""
             + "}";
     }
 

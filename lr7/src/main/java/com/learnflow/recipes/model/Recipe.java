@@ -8,17 +8,19 @@ public class Recipe {
     private String difficulty;
     private String steps;
     private int cookTime;
+    private String imagePath;
 
     public Recipe() {}
 
     public Recipe(int id, String name, String ingredients,
-                  String difficulty, String steps, int cookTime) {
+                  String difficulty, String steps, int cookTime, String imagePath) {
         this.id          = id;
         this.name        = name;
         this.ingredients = ingredients;
         this.difficulty  = difficulty;
         this.steps       = steps;
         this.cookTime    = cookTime;
+        this.imagePath   = imagePath;
     }
 
     public int getId()                  { return id; }
@@ -38,6 +40,9 @@ public class Recipe {
 
     public int getCookTime()                { return cookTime; }
     public void setCookTime(int cookTime)   { this.cookTime = cookTime; }
+
+    public String getImagePath()                    { return imagePath; }
+    public void setImagePath(String imagePath)      { this.imagePath = imagePath; }
 
     @Override
     public String toString() {

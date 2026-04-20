@@ -13,26 +13,25 @@ public class RecipeDao {
     private static final Logger LOGGER = Logger.getLogger(RecipeDao.class.getName());
 
     private static final String SQL_SELECT_ALL =
-        "SELECT id, name, ingredients, difficulty, steps, cook_time FROM recipes ORDER BY id";
+        "SELECT id, name, ingredients, difficulty, steps, cook_time, image_path FROM recipes ORDER BY id";
 
     private static final String SQL_SELECT_BY_ID =
-        "SELECT id, name, ingredients, difficulty, steps, cook_time FROM recipes WHERE id = ?";
+        "SELECT id, name, ingredients, difficulty, steps, cook_time, image_path FROM recipes WHERE id = ?";
 
     private static final String SQL_SEARCH_BY_NAME =
-        "SELECT id, name, ingredients, difficulty, steps, cook_time " +
+        "SELECT id, name, ingredients, difficulty, steps, cook_time, image_path " +
         "FROM recipes WHERE LOWER(name) LIKE LOWER(?) ORDER BY name";
 
     private static final String SQL_INSERT =
-        "INSERT INTO recipes (name, ingredients, difficulty, steps, cook_time) " +
-        "VALUES (?, ?, ?, ?, ?) RETURNING id";
+        "INSERT INTO recipes (name, ingredients, difficulty, steps, cook_time, image_path) " +
+        "VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
 
     private static final String SQL_UPDATE =
-        "UPDATE recipes SET name=?, ingredients=?, difficulty=?, steps=?, cook_time=? WHERE id=?";
+        "UPDATE recipes SET name=?, ingredients=?, difficulty=?, steps=?, cook_time=?, image_path=? WHERE id=?";
 
     private static final String SQL_DELETE =
         "DELETE FROM recipes WHERE id=?";
 
-   
     public List<Recipe> findAll() throws SQLException {
         List<Recipe> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
@@ -46,21 +45,13 @@ public class RecipeDao {
         return list;
     }
 
-    /**
-     * Находит рецепт по идентификатору.
-     *
-     * @param id идентификатор рецепта
-     * @return рецепт или null, если не найден
-     */
     public Recipe findById(int id) throws SQLException {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_SELECT_BY_ID)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Recipe r = mapRow(rs);
-                    LOGGER.info("findById(" + id + "): найден рецепт '" + r.getName() + "'");
-                    return r;
+                    return mapRow(rs);
                 }
             }
         }
@@ -68,11 +59,6 @@ public class RecipeDao {
         return null;
     }
 
-    /**
-     * Ищет рецепты по части названия (без учёта регистра).
-     *
-     * @param query поисковый запрос
-     */
     public List<Recipe> searchByName(String query) throws SQLException {
         List<Recipe> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
@@ -88,12 +74,6 @@ public class RecipeDao {
         return list;
     }
 
-    /**
-     * Добавляет новый рецепт и возвращает его с присвоенным id.
-     *
-     * @param recipe рецепт без id
-     * @return рецепт с присвоенным id
-     */
     public Recipe insert(Recipe recipe) throws SQLException {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_INSERT)) {
@@ -102,6 +82,7 @@ public class RecipeDao {
             ps.setString(3, recipe.getDifficulty());
             ps.setString(4, recipe.getSteps());
             ps.setInt(5, recipe.getCookTime());
+            ps.setString(6, recipe.getImagePath());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     recipe.setId(rs.getInt(1));
@@ -112,12 +93,6 @@ public class RecipeDao {
         return recipe;
     }
 
-    /**
-     * Обновляет существующий рецепт.
-     *
-     * @param recipe рецепт с корректным id
-     * @return true если запись обновлена, false если id не найден
-     */
     public boolean update(Recipe recipe) throws SQLException {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_UPDATE)) {
@@ -126,19 +101,14 @@ public class RecipeDao {
             ps.setString(3, recipe.getDifficulty());
             ps.setString(4, recipe.getSteps());
             ps.setInt(5, recipe.getCookTime());
-            ps.setInt(6, recipe.getId());
+            ps.setString(6, recipe.getImagePath());
+            ps.setInt(7, recipe.getId());
             int rows = ps.executeUpdate();
             LOGGER.info("update id=" + recipe.getId() + ": обновлено строк=" + rows);
             return rows > 0;
         }
     }
 
-    /**
-     * Удаляет рецепт по идентификатору.
-     *
-     * @param id идентификатор рецепта
-     * @return true если запись удалена
-     */
     public boolean delete(int id) throws SQLException {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_DELETE)) {
@@ -156,7 +126,8 @@ public class RecipeDao {
             rs.getString("ingredients"),
             rs.getString("difficulty"),
             rs.getString("steps"),
-            rs.getInt("cook_time")
+            rs.getInt("cook_time"),
+            rs.getString("image_path")
         );
     }
 }

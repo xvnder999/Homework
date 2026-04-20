@@ -5,34 +5,36 @@ import com.learnflow.recipes.model.Recipe;
 import com.learnflow.recipes.util.JsonUtil;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
+import javax.servlet.http.Part;
+import java.io.*;
+import java.nio.file.*;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 
-/**
- * Сервлет для управления рецептами.
- *
- * <p>Поддерживаемые маршруты:
- * <ul>
- *   <li>GET  /recipes          — список всех рецептов</li>
- *   <li>GET  /recipes?search=  — поиск по названию</li>
- *   <li>GET  /recipes?id=      — получить рецепт по id</li>
- *   <li>POST /recipes          — добавить рецепт</li>
- *   <li>PUT  /recipes          — обновить рецепт (id в теле)</li>
- *   <li>DELETE /recipes?id=    — удалить рецепт</li>
- * </ul>
- */
 @WebServlet("/recipes")
+@MultipartConfig(maxFileSize = 5 * 1024 * 1024)
 public class RecipeServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(RecipeServlet.class.getName());
     private final RecipeDao dao = new RecipeDao();
+
+    private String uploadDir;
+
+    @Override
+    public void init() throws ServletException {
+        uploadDir = getServletContext().getRealPath("") + File.separator + "uploads";
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -83,7 +85,10 @@ public class RecipeServlet extends HttpServlet {
         PrintWriter out = resp.getWriter();
 
         try {
+            String imagePath = saveImage(req);
             Recipe recipe = parseRecipeFromRequest(req, false);
+            recipe.setImagePath(imagePath);
+
             Recipe created = dao.insert(recipe);
             resp.setStatus(HttpServletResponse.SC_CREATED);
             out.print(JsonUtil.toJson(created));
@@ -109,6 +114,16 @@ public class RecipeServlet extends HttpServlet {
 
         try {
             Recipe recipe = parseRecipeFromRequest(req, true);
+
+            // если загрузили новое фото — заменяем, иначе оставляем старое
+            String newImage = saveImage(req);
+            if (newImage != null) {
+                recipe.setImagePath(newImage);
+            } else {
+                String keepImage = req.getParameter("existingImage");
+                recipe.setImagePath(keepImage);
+            }
+
             boolean updated = dao.update(recipe);
             if (!updated) {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -144,6 +159,13 @@ public class RecipeServlet extends HttpServlet {
 
         try {
             int id = Integer.parseInt(idParam);
+
+            // удаляем файл фото если есть
+            Recipe existing = dao.findById(id);
+            if (existing != null && existing.getImagePath() != null) {
+                deleteImageFile(existing.getImagePath());
+            }
+
             boolean deleted = dao.delete(id);
             if (!deleted) {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -163,11 +185,48 @@ public class RecipeServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Извлекает и валидирует параметры рецепта из запроса.
-     *
-     * @param needId true если требуется параметр id (для PUT)
-     */
+    // сохраняет загруженное фото и возвращает путь вида "uploads/filename.jpg"
+    // возвращает null если файл не был загружен
+    private String saveImage(HttpServletRequest req) throws IOException, ServletException {
+        Part part = req.getPart("image");
+        if (part == null || part.getSize() == 0) {
+            return null;
+        }
+
+        String originalName = part.getSubmittedFileName();
+        if (originalName == null || originalName.isEmpty()) {
+            return null;
+        }
+
+        String ext = "";
+        int dotIndex = originalName.lastIndexOf('.');
+        if (dotIndex >= 0) {
+            ext = originalName.substring(dotIndex).toLowerCase();
+        }
+
+        if (!ext.equals(".jpg") && !ext.equals(".jpeg") && !ext.equals(".png") && !ext.equals(".gif")) {
+            throw new IllegalArgumentException("Допустимые форматы изображений: jpg, jpeg, png, gif");
+        }
+
+        String fileName = UUID.randomUUID().toString() + ext;
+        Path savePath = Paths.get(uploadDir, fileName);
+        try (InputStream in = part.getInputStream()) {
+            Files.copy(in, savePath, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        return "uploads/" + fileName;
+    }
+
+    private void deleteImageFile(String imagePath) {
+        if (imagePath == null) return;
+        String fullPath = getServletContext().getRealPath("") + File.separator + imagePath.replace("/", File.separator);
+        try {
+            Files.deleteIfExists(Paths.get(fullPath));
+        } catch (IOException e) {
+            LOGGER.warning("Не удалось удалить файл: " + fullPath);
+        }
+    }
+
     private Recipe parseRecipeFromRequest(HttpServletRequest req, boolean needId)
             throws IllegalArgumentException {
 
