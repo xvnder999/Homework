@@ -5,13 +5,13 @@ const API = 'recipes';
 let allRecipes = [];
 let editingId  = null;
 
-const grid          = document.getElementById('recipeGrid');
-const searchInput   = document.getElementById('searchInput');
-const formModal     = document.getElementById('formModal');
-const viewModal     = document.getElementById('viewModal');
-const recipeForm    = document.getElementById('recipeForm');
-const modalTitle    = document.getElementById('modalTitle');
-const toast         = document.getElementById('toast');
+const grid        = document.getElementById('recipeGrid');
+const searchInput = document.getElementById('searchInput');
+const formModal   = document.getElementById('formModal');
+const viewModal   = document.getElementById('viewModal');
+const recipeForm  = document.getElementById('recipeForm');
+const modalTitle  = document.getElementById('modalTitle');
+const toast       = document.getElementById('toast');
 
 document.addEventListener('DOMContentLoaded', loadRecipes);
 
@@ -47,22 +47,29 @@ function renderGrid(recipes) {
         grid.innerHTML = '<div class="empty-state"><div class="icon">🍽️</div><p>Рецепты не найдены</p></div>';
         return;
     }
-    grid.innerHTML = recipes.map(r => `
+    grid.innerHTML = recipes.map(r => {
+        const imgHtml = r.imagePath
+            ? `<div class="card-img"><img src="${r.imagePath}" alt="${escHtml(r.name)}"></div>`
+            : `<div class="card-img card-img-empty">🍽️</div>`;
+        return `
         <div class="recipe-card" onclick="openView(${r.id})">
-            <div class="recipe-card-header">
-                <h3>${escHtml(r.name)}</h3>
-                ${diffBadge(r.difficulty)}
+            ${imgHtml}
+            <div class="card-body">
+                <div class="recipe-card-header">
+                    <h3>${escHtml(r.name)}</h3>
+                    ${diffBadge(r.difficulty)}
+                </div>
+                <div class="recipe-meta">
+                    <span>⏱ ${r.cookTime} мин</span>
+                </div>
+                <div class="recipe-ingredients">${escHtml(r.ingredients)}</div>
+                <div class="recipe-actions" onclick="event.stopPropagation()">
+                    <button class="btn-icon" title="Редактировать" onclick="openEdit(${r.id})">✏️</button>
+                    <button class="btn-icon" title="Удалить" onclick="deleteRecipe(${r.id})">🗑️</button>
+                </div>
             </div>
-            <div class="recipe-meta">
-                <span>⏱ ${r.cookTime} мин</span>
-            </div>
-            <div class="recipe-ingredients">${escHtml(r.ingredients)}</div>
-            <div class="recipe-actions" onclick="event.stopPropagation()">
-                <button class="btn-icon" title="Редактировать" onclick="openEdit(${r.id})">✏️</button>
-                <button class="btn-icon" title="Удалить" onclick="deleteRecipe(${r.id})">🗑️</button>
-            </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 function diffBadge(d) {
@@ -74,11 +81,20 @@ function openView(id) {
     fetch(`${API}?id=${id}`)
         .then(r => r.json())
         .then(r => {
-            document.getElementById('viewTitle').textContent = r.name;
-            document.getElementById('viewBadge').innerHTML   = diffBadge(r.difficulty);
-            document.getElementById('viewCookTime').textContent   = r.cookTime + ' минут';
-            document.getElementById('viewIngredients').textContent = r.ingredients;
-            document.getElementById('viewSteps').textContent       = r.steps;
+            document.getElementById('viewTitle').textContent        = r.name;
+            document.getElementById('viewBadge').innerHTML          = diffBadge(r.difficulty);
+            document.getElementById('viewCookTime').textContent     = r.cookTime + ' минут';
+            document.getElementById('viewIngredients').textContent  = r.ingredients;
+            document.getElementById('viewSteps').textContent        = r.steps;
+
+            const viewImg = document.getElementById('viewImg');
+            if (r.imagePath) {
+                viewImg.src = r.imagePath;
+                viewImg.style.display = 'block';
+            } else {
+                viewImg.style.display = 'none';
+            }
+
             viewModal.classList.add('open');
         })
         .catch(() => showToast('Ошибка загрузки рецепта', 'error'));
@@ -88,6 +104,8 @@ function openAdd() {
     editingId = null;
     modalTitle.textContent = 'Добавить рецепт';
     recipeForm.reset();
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('existingImage').value = '';
     formModal.classList.add('open');
 }
 
@@ -102,31 +120,58 @@ function openEdit(id) {
             document.getElementById('fDifficulty').value  = r.difficulty;
             document.getElementById('fSteps').value       = r.steps;
             document.getElementById('fCookTime').value    = r.cookTime;
+            document.getElementById('existingImage').value = r.imagePath || '';
+
+            const preview = document.getElementById('imagePreview');
+            if (r.imagePath) {
+                preview.src = r.imagePath;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+
+            document.getElementById('fImage').value = '';
             formModal.classList.add('open');
         })
         .catch(() => showToast('Ошибка загрузки рецепта', 'error'));
 }
 
+// предпросмотр выбранного фото
+document.getElementById('fImage').addEventListener('change', function() {
+    const file = this.files[0];
+    const preview = document.getElementById('imagePreview');
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+    }
+});
+
 recipeForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const body = new URLSearchParams({
-        name:        document.getElementById('fName').value.trim(),
-        ingredients: document.getElementById('fIngredients').value.trim(),
-        difficulty:  document.getElementById('fDifficulty').value,
-        steps:       document.getElementById('fSteps').value.trim(),
-        cookTime:    document.getElementById('fCookTime').value,
-    });
+    // используем FormData чтобы отправить файл
+    const formData = new FormData();
+    formData.append('name',        document.getElementById('fName').value.trim());
+    formData.append('ingredients', document.getElementById('fIngredients').value.trim());
+    formData.append('difficulty',  document.getElementById('fDifficulty').value);
+    formData.append('steps',       document.getElementById('fSteps').value.trim());
+    formData.append('cookTime',    document.getElementById('fCookTime').value);
 
-    let method = 'POST';
-    let url    = API;
-
-    if (editingId !== null) {
-        method = 'PUT';
-        body.set('id', editingId);
+    const imageFile = document.getElementById('fImage').files[0];
+    if (imageFile) {
+        formData.append('image', imageFile);
     }
 
-    fetch(url, { method, body })
+    let method = 'POST';
+    if (editingId !== null) {
+        method = 'PUT';
+        formData.append('id', editingId);
+        formData.append('existingImage', document.getElementById('existingImage').value);
+    }
+
+    fetch(API, { method, body: formData })
         .then(r => r.json())
         .then(data => {
             if (data.error) { showToast(data.error, 'error'); return; }
