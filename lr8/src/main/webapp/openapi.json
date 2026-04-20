@@ -1,0 +1,202 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Recipes REST API",
+    "description": "RESTful API для управления рецептами. Лабораторная работа №8.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/recipes-api",
+      "description": "Локальный сервер Tomcat"
+    }
+  ],
+  "paths": {
+    "/api/recipes": {
+      "get": {
+        "summary": "Список всех рецептов",
+        "operationId": "getAllRecipes",
+        "responses": {
+          "200": {
+            "description": "Массив рецептов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Recipe" }
+                },
+                "example": [
+                  { "id": 1, "name": "Борщ классический", "cookTime": 120, "ingredients": "свёкла, капуста, картофель" }
+                ]
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      },
+      "post": {
+        "summary": "Добавить рецепт",
+        "operationId": "createRecipe",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "$ref": "#/components/schemas/RecipeInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Рецепт создан",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Recipe" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/recipes/search": {
+      "get": {
+        "summary": "Поиск рецептов по ингредиенту",
+        "operationId": "searchByIngredient",
+        "parameters": [
+          {
+            "name": "ingredient",
+            "in": "query",
+            "required": true,
+            "description": "Название ингредиента для поиска",
+            "schema": { "type": "string", "example": "рис" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Найденные рецепты",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Recipe" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/recipes/{id}": {
+      "get": {
+        "summary": "Получить рецепт по id",
+        "operationId": "getRecipeById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Идентификатор рецепта",
+            "schema": { "type": "integer", "example": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Рецепт найден",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Recipe" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      },
+      "delete": {
+        "summary": "Удалить рецепт по id",
+        "operationId": "deleteRecipe",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Идентификатор рецепта",
+            "schema": { "type": "integer", "example": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Рецепт удалён",
+            "content": {
+              "application/json": {
+                "example": { "message": "Рецепт удалён", "status": 200 }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Recipe": {
+        "type": "object",
+        "properties": {
+          "id":          { "type": "integer", "example": 1 },
+          "name":        { "type": "string",  "example": "Борщ классический" },
+          "cookTime":    { "type": "integer", "example": 120 },
+          "ingredients": { "type": "string",  "example": "свёкла, капуста, картофель" }
+        }
+      },
+      "RecipeInput": {
+        "type": "object",
+        "required": ["name", "cookTime", "ingredients"],
+        "properties": {
+          "name":        { "type": "string",  "example": "Борщ классический" },
+          "cookTime":    { "type": "integer", "example": 120 },
+          "ingredients": { "type": "string",  "example": "свёкла, капуста, картофель" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message":   { "type": "string",  "example": "Рецепт не найден" },
+          "timestamp": { "type": "string",  "example": "2026-04-20T12:00:00Z" },
+          "status":    { "type": "integer", "example": 404 }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Некорректный запрос",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Ресурс не найден",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Внутренняя ошибка сервера",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    }
+  }
+}
