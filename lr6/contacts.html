@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Контакты — LearnFlow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .contact-form { display:flex; flex-direction:column; gap:16px; }
+        .form-group { display:flex; flex-direction:column; gap:6px; }
+        .form-group label { font-size:0.85rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
+        .form-group input, .form-group select, .form-group textarea {
+            background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
+            padding:12px 14px; color:var(--text); font-family:var(--font-body); font-size:0.95rem;
+            transition:border-color var(--transition); outline:none; width:100%;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow);
+        }
+        .form-group textarea { resize:vertical; min-height:120px; }
+        .form-group select option { background:var(--surface2); }
+        .contact-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:24px; display:flex; gap:16px; align-items:flex-start; }
+        .contact-icon { font-size:1.8rem; flex-shrink:0; }
+        .contact-card h3 { font-size:1rem; margin-bottom:4px; font-family:var(--font-body); }
+        .contact-card p { color:var(--text-muted); font-size:0.9rem; }
+        .contact-card a { color:var(--accent); }
+        .faq-item { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:20px; }
+        .faq-item h3 { font-size:0.95rem; font-family:var(--font-body); font-weight:600; margin-bottom:8px; }
+        .faq-item p { color:var(--text-muted); font-size:0.88rem; }
+        .two-col { display:grid; grid-template-columns:1fr 1fr; gap:48px; flex-wrap:wrap; }
+        @media(max-width:700px){ .two-col { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="index.html" class="nav-logo">LearnFlow</a>
+        <ul class="nav-links">
+            <li><a href="index.html"><span>Каталог</span></a></li>
+            <li><a href="course.html"><span>Курс</span></a></li>
+            <li><a href="homework.html"><span>Задания</span></a></li>
+            <li><a href="about.html"><span>О нас</span></a></li>
+            <li><a href="contacts.html" class="active"><span>Контакты</span></a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <div class="container">
+
+        <div class="page-header">
+            <nav class="breadcrumb" aria-label="Навигация">
+                <a href="index.html">Главная</a>
+                <span>›</span>
+                <span>Контакты</span>
+            </nav>
+            <h1>Свяжитесь с нами</h1>
+            <p style="color:var(--text-muted); margin-top:12px; font-size:1.05rem;">Мы отвечаем в течение 24 часов в рабочие дни.</p>
+        </div>
+
+        <section>
+            <div class="section-header">
+                <h2>Способы связи</h2>
+            </div>
+            <div class="grid-2" style="margin-bottom:48px;">
+                <div class="contact-card">
+                    <div class="contact-icon">📧</div>
+                    <div>
+                        <h3>Email</h3>
+                        <p>Для вопросов по курсам и оплате:<br><a href="mailto:hello@learnflow.ru">hello@learnflow.ru</a></p>
+                    </div>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon">💬</div>
+                    <div>
+                        <h3>Telegram</h3>
+                        <p>Быстрая поддержка студентов:<br><a href="#">@learnflow_support</a></p>
+                    </div>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon">📞</div>
+                    <div>
+                        <h3>Телефон</h3>
+                        <p>Пн–Пт, 10:00–18:00 МСК:<br><a href="tel:+74951234567">+7 (495) 123-45-67</a></p>
+                    </div>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon">🏢</div>
+                    <div>
+                        <h3>Офис</h3>
+                        <p>Москва, ул. Технологическая, 15<br><span style="color:var(--text-dim); font-size:0.82rem;">Только по предварительной записи</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="two-col">
+                <div>
+                    <div class="section-header">
+                        <h2>Написать нам</h2>
+                        <p>Заполните форму — ответим на почту</p>
+                    </div>
+                    <form class="contact-form" onsubmit="handleSubmit(event)">
+                        <div class="form-group">
+                            <label for="name">Ваше имя</label>
+                            <input type="text" id="name" name="name" placeholder="Иван Иванов" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="ivan@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="topic">Тема обращения</label>
+                            <select id="topic" name="topic">
+                                <option value="">Выберите тему</option>
+                                <option value="course">Вопрос по курсу</option>
+                                <option value="payment">Оплата и тарифы</option>
+                                <option value="certificate">Сертификаты</option>
+                                <option value="tech">Технические проблемы</option>
+                                <option value="other">Другое</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Сообщение</label>
+                            <textarea id="message" name="message" placeholder="Опишите ваш вопрос..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Отправить сообщение</button>
+                    </form>
+                    <div id="success-msg" style="display:none; margin-top:16px; padding:14px; background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); border-radius:var(--radius-sm); color:var(--success); font-size:0.9rem;">
+                        ✓ Сообщение отправлено! Ответим в течение 24 часов.
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-header">
+                        <h2>Частые вопросы</h2>
+                        <p>Ответы на популярные вопросы</p>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <div class="faq-item">
+                            <h3>Можно ли учиться бесплатно?</h3>
+                            <p>Да! Несколько курсов полностью бесплатны — по кибербезопасности и PostgreSQL.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h3>Как получить сертификат?</h3>
+                            <p>Сертификат выдаётся автоматически после выполнения всех заданий и финального теста.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h3>Можно ли учиться в своём темпе?</h3>
+                            <p>Да, все материалы доступны без ограничений по времени.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h3>Есть ли групповые скидки?</h3>
+                            <p>Для корпоративного обучения от 5 человек предусмотрены скидки. Напишите нам.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h3>Как проверяются домашние задания?</h3>
+                            <p>На тарифе Студент — автоматически. На тарифе Pro — куратором с подробной обратной связью.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="nav-logo">LearnFlow</div>
+                <p>Платформа онлайн-курсов для всех, кто хочет расти в IT и смежных областях.</p>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-title">Курсы</p>
+                <ul>
+                    <li><a href="index.html">Каталог</a></li>
+                    <li><a href="course.html">Кибербезопасность</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-title">Платформа</p>
+                <ul>
+                    <li><a href="homework.html">Задания</a></li>
+                    <li><a href="about.html">О нас</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <p class="footer-col-title">Поддержка</p>
+                <ul>
+                    <li><a href="contacts.html">Помощь</a></li>
+                    <li><a href="contacts.html">FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 LearnFlow. Все права защищены.</span>
+            <span>Сделано с ♥ для студентов</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+function handleSubmit(e) {
+    e.preventDefault();
+    document.getElementById('success-msg').style.display = 'block';
+    e.target.reset();
+}
+</script>
+
+</body>
+</html>
