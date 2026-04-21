@@ -46,7 +46,6 @@ public class AuthFilter implements Filter {
             return;
         }
 
-        // страницы только для admin
         if (path.startsWith("/admin") && !user.isAdmin()) {
             response.sendRedirect(request.getContextPath() + "/dashboard");
             return;
